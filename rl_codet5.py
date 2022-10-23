@@ -2,7 +2,8 @@ import os
 import torch
 import numpy as np
 import datetime
-import wandb
+#import wandb
+
 
 os.environ["CUDA_VISIBLE_DEVICES"]="0"
 parent_dir = '/home/grads/parshinshojaee/trl_code/trl_code/datasets/'
@@ -24,6 +25,8 @@ load_model_path = 'baselines/codet5/saved_models/'+l1+'-'+l2+'/checkpoint-best-b
 output_dir = 'saved_models/codet5/saved_models/'+l1+'-'+l2
 np.random.seed(42)
 torch.manual_seed(42)
+
+
 
 class Args():
     def __init__(self):
@@ -56,7 +59,7 @@ args = Args()
 
 
 
-from reward import remove_special_tokens, tree_sitter_full_compile
+from reward import remove_special_tokens, tree_sitter_full_compile, get_binary_compilation_reward
 
 def get_num_errors(filepath):
     codes = open(filepath).readlines()
