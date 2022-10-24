@@ -2,6 +2,24 @@ import numpy as np
 from tree_sitter import Language, Parser
 import re
 import torch
+from code_prepro.lang_processors import *
+from compiler.terminal_compiler import TerminalCompiler
+
+
+code_tokenizers = {"java": java_tokenizer, "cpp": cpp_tokenizer, "c": c_tokenizer, "python": py_tokenizer,
+                   "javascript": js_tokenizer, "php": php_tokenizer, "c_sharp": cs_tokenizer}
+code_detokenizers = {"java": java_detokenizer, "cpp": cpp_detokenizer, "c": c_detokenizer, "python": py_detokenizer,
+                   "javascript": js_detokenizer, "php": php_detokenizer, "c_sharp": cs_detokenizer}
+
+lang2compiler = {
+    "python": TerminalCompiler("Python"),
+    "java": TerminalCompiler("Java"),
+    "cpp": TerminalCompiler("C++"),
+    "c_sharp": TerminalCompiler("C#"),
+    "c": TerminalCompiler("C"),
+    "php": TerminalCompiler("PHP"),
+}
+
 
 parsers={}        
 for lang in ['python']:
@@ -103,12 +121,33 @@ def get_reward(code_ids=None, code_ref_ids=None, tokenizer=None):
     return torch.Tensor(rewards), num_errors,num_errors_ref, num_nodes, num_nodes_ref
     
     
+def get_binary_compilation_reward(lang, code_ids=None, tokenizer=None):
+    code_ids = np.array(code_ids.cpu())
+    eos_positions = []
+    max_len = code_ids.shape[1]
+    for id in code_ids:
+        if tokenizer.eos_token_id in id:
+            eos_positions.append((id==tokenizer.eos_token_id).argmax())
+        else:
+            eos_positions.append(max_len)
+
+    codes = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
+             for id,eos_pos in zip(code_ids, eos_positions)]
+        
+    codes = [code_detokenizers[lang](code) for code in codes]
     
-    
-    
-    
-    
-    
-    
-    
-    
+    compilation = [lang2compiler[lang].compile_code_string(code) for code in codes]
+
+    #error_node_counts = [tree_sitter_full_compile(code) for code in codes]
+    #num_errors = [i[0] for i in error_node_counts]
+    #num_nodes = [i[1] for i in error_node_counts]
+
+    rewards = np.zeros_like(code_ids, dtype=np.float)
+
+    for i in range(len(rewards)):
+        _, _, did_compile = compilation[i]
+        reward = 100 if did_compile else -100
+        rewards[i, min(eos_positions[i],max_len-1)] = reward
+        
+    return torch.Tensor(rewards)#, num_errors, num_nodes
+
