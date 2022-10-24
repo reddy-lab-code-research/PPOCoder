@@ -246,7 +246,7 @@ def get_reward(code_ids=None, code_ref_ids=None, tokenizer=None):
     return torch.Tensor(rewards), num_errors,num_errors_ref, num_nodes, num_nodes_ref
 
 
-def test(features, dataloader, prefix):
+def test(epoch,features, dataloader, prefix):
     pbar = dataloader
     pred_ids = []
     pred_ids_ref = []
@@ -281,9 +281,9 @@ def test(features, dataloader, prefix):
                                               for id in pred_ids_ref]
 
     path = args.output_dir + '/codet5_ppo' + '_reward%d'%(args.reward_id) +  '_bs%d'%(args.train_batch_size) + '_in-len%d'%(args.max_source_length) + '_out-len%d'%(args.max_target_length) +'_r%d'%(args.run)
-    with open(os.path.join(path,prefix+".model"),'w') as f_model, \
-            open(os.path.join(path,prefix+".gold"),'w') as f_gold, \
-              open(os.path.join(path,prefix+".model_ref"),'w') as f_ref:
+    with open(os.path.join(path,prefix+".model"+ "_ep%d"%(epoch) ),'w') as f_model, \
+            open(os.path.join(path,prefix+".gold"+ "_ep%d"%(epoch) ),'w') as f_gold, \
+              open(os.path.join(path,prefix+".model_ref"+ "_ep%d"%(epoch) ),'w') as f_ref:
                     for pred,ref,i in zip(p,p_ref,indices):
                         f_model.write(pred+'\n')
                         f_ref.write(ref+'\n')   
@@ -379,7 +379,7 @@ for ep in range(args.train_epochs):
 
     #plot the reward and nerrors over steps   
     # compute bleu
-    nerrors, nerrors_ref = test(train_features, train_dataloader, 'train')
+    nerrors, nerrors_ref = test(ep,train_features, train_dataloader, 'train')
       
     # print ('epoch', ep, '# errors', epoch_nerrors, 'BLEU', str(round(bleu,2))+'/'+str(round(bleu_ref,2)), \
     #       'nerrors', str(nerrors)+'/'+str(nerrors_ref))
