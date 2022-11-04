@@ -7,3 +7,4 @@ figures/
 datasets/
 baselines/
 ..venv/
+figures.py
