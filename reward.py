@@ -4,6 +4,12 @@ import re
 import torch
 from code_prepro.lang_processors import *
 from compiler.terminal_compiler import TerminalCompiler
+import sys
+sys.path.insert(0, '/home/grads/parshinshojaee/trl_code/trl_code/rl_code_repo/CodeBLEU/')
+from calc_code_bleu import calc_code_bleu
+
+
+
 
 
 code_tokenizers = {"java": java_tokenizer, "cpp": cpp_tokenizer, "c": c_tokenizer, "python": py_tokenizer,
@@ -64,25 +70,7 @@ def tree_sitter_full_compile(code, lang='python', verbose = False):
     return count_list
 
 
-# def get_reward(code_ids=None, tokenizer=None):
-#     code_ids = np.array(code_ids.cpu())
-#     eos_positions = [(id==tokenizer.eos_token_id).argmax() for id in code_ids]
-#     codes = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
-#              for id,eos_pos in zip(code_ids, eos_positions)]
-        
-#     codes = [remove_special_tokens(code) for code in codes]
-#     error_node_counts = [tree_sitter_full_compile(code) for code in codes]
-#     num_errors = [i[0] for i in error_node_counts]
-#     num_nodes = [i[1] for i in error_node_counts]
-#     rewards = np.zeros_like(code_ids)
-#     for i in range(len(rewards)):
-#         rewards[i, eos_positions[i]] = num_nodes[i]-num_errors[i]
-#     return torch.Tensor(rewards), num_errors, num_nodes
-
-
-
-
-def get_reward(code_ids=None, code_ref_ids=None, tokenizer=None):
+def get_reward(code_ids=None, code_ref_ids=None,gold_ids=None, tokenizer=None):
     code_ids = np.array(code_ids.cpu())
     eos_positions = []
     max_len = code_ids.shape[1]
@@ -91,63 +79,108 @@ def get_reward(code_ids=None, code_ref_ids=None, tokenizer=None):
             eos_positions.append((id==tokenizer.eos_token_id).argmax())
         else:
             eos_positions.append(max_len)
+
+    codes = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
+             for id,eos_pos in zip(code_ids, eos_positions)]
+    
+    codes_ref = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
+             for id,eos_pos in zip(code_ref_ids, eos_positions)]
+    
+    codes_gold = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
+             for id,eos_pos in zip(gold_ids, eos_positions)]
+        
+    codes = [remove_special_tokens(code) for code in codes]
+    codes_ref = [remove_special_tokens(code) for code in codes_ref]
+    codes_gold = [remove_special_tokens(code) for code in codes_gold]
+    error_node_counts = [tree_sitter_full_compile(code) for code in codes]
+    error_node_counts_ref = [tree_sitter_full_compile(code) for code in codes_ref]
+    error_node_counts_gold = [tree_sitter_full_compile(code) for code in codes_gold]
+    num_errors = [i[0] for i in error_node_counts]
+    num_errors_ref = [i[0] for i in error_node_counts_ref]  
+    num_errors_gold = [i[0] for i in error_node_counts_gold]  
+    num_nodes = [i[1] for i in error_node_counts]
+    num_nodes_ref = [i[1] for i in error_node_counts_ref]
+    num_nodes_gold = [i[1] for i in error_node_counts_gold]
+    
+    
+    rewards = np.zeros_like(code_ids, dtype=np.float)
+    for i in range(len(rewards)):
+    #     # rewards[i, min(eos_positions[i],max_len-1)] = (num_nodes[i]-num_errors[i])*0.001 
+    #     # rewards[i, min(eos_positions[i],max_len-1)] = (num_nodes[i]-num_errors[i])
+    #     rewards[i, min(eos_positions[i],max_len-1)] = (num_nodes[i]-args.loss_W*num_errors[i])*args.reward_W
+        rewards[i, min(eos_positions[i],max_len-1)] = -num_errors[i]**2
+    
+    ###############################
+    #ADDED PARSHIN: TO JUST SEE THE PERFORMANCE OF KL TERM   
+    # rewards = np.zeros_like(code_ids, dtype=np.float)
+    # breakpoint()
+    # for i in range(len(rewards)):
+    #     rewards[i, min(eos_positions[i],max_len-1)] = -args.reward_W*(num_nodes[i] - num_nodes_ref[i])**2
+    ###############################
+    return torch.Tensor(rewards), num_errors,num_errors_ref, num_nodes, num_nodes_ref
+
+
+ 
+def get_binary_compilation_reward(lang, code_ids=None,code_ref_ids=None,gold_ids=None, tokenizer=None):
+    code_ids = np.array(code_ids.cpu())
+    eos_positions = []
+    max_len = code_ids.shape[1]
+    for id in code_ids:
+        if tokenizer.eos_token_id in id:
+            eos_positions.append((id==tokenizer.eos_token_id).argmax())
+        else:
+            eos_positions.append(max_len)
+
     codes = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
              for id,eos_pos in zip(code_ids, eos_positions)]
     codes_ref = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
-             for id,eos_pos in zip(code_ref_ids, eos_positions)]  
-    codes = [remove_special_tokens(code) for code in codes]
-    codes_ref = [remove_special_tokens(code) for code in codes_ref]
-    error_node_counts = [tree_sitter_full_compile(code) for code in codes]
-    error_node_counts_ref = [tree_sitter_full_compile(code) for code in codes_ref]
-    num_errors = [i[0] for i in error_node_counts]
-    num_errors_ref = [i[0] for i in error_node_counts_ref]  
-    num_nodes = [i[1] for i in error_node_counts]
-    num_nodes_ref = [i[1] for i in error_node_counts_ref]
-    
-    rewards = np.zeros_like(code_ids, dtype=np.float)
-    for i in range(len(rewards)):
-        # rewards[i, min(eos_positions[i],max_len-1)] = (num_nodes[i]-num_errors[i])*0.001 
-        # rewards[i, min(eos_positions[i],max_len-1)] = (num_nodes[i]-num_errors[i])
-        rewards[i, min(eos_positions[i],max_len-1)] = (num_nodes[i]-args.loss_W*num_errors[i])*args.reward_W
-        # rewards[i, min(eos_positions[i],max_len-1)] = -num_errors[i]
-    
-    ###############################
-    #MODIFED PARSHIN:  
-    rewards = np.zeros_like(code_ids, dtype=np.float)
-    # breakpoint()
-    for i in range(len(rewards)):
-        rewards[i, min(eos_positions[i],max_len-1)] = -args.reward_W*(num_nodes[i] - num_nodes_ref[i])**2
-    ###############################
-    return torch.Tensor(rewards), num_errors,num_errors_ref, num_nodes, num_nodes_ref
-    
-    
-def get_binary_compilation_reward(lang, code_ids=None, tokenizer=None):
-    code_ids = np.array(code_ids.cpu())
-    eos_positions = []
-    max_len = code_ids.shape[1]
-    for id in code_ids:
-        if tokenizer.eos_token_id in id:
-            eos_positions.append((id==tokenizer.eos_token_id).argmax())
-        else:
-            eos_positions.append(max_len)
-
-    codes = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
-             for id,eos_pos in zip(code_ids, eos_positions)]
+             for id,eos_pos in zip(code_ref_ids, eos_positions)] 
+    codes_gold = [tokenizer.decode(id[:eos_pos], skip_special_tokens=True, clean_up_tokenization_spaces=False) \
+             for id,eos_pos in zip(gold_ids, eos_positions)] 
         
     codes = [code_detokenizers[lang](code) for code in codes]
     
     compilation = [lang2compiler[lang].compile_code_string(code) for code in codes]
 
-    #error_node_counts = [tree_sitter_full_compile(code) for code in codes]
-    #num_errors = [i[0] for i in error_node_counts]
-    #num_nodes = [i[1] for i in error_node_counts]
-
+    codes = [remove_special_tokens(code) for code in codes]
+    codes_ref = [remove_special_tokens(code) for code in codes_ref]
+    codes_gold = [remove_special_tokens(code) for code in codes_gold]
+    error_node_counts = [tree_sitter_full_compile(code) for code in codes]
+    error_node_counts_ref = [tree_sitter_full_compile(code) for code in codes_ref]
+    error_node_counts_gold = [tree_sitter_full_compile(code) for code in codes_gold]
+    num_errors = [i[0] for i in error_node_counts]
+    num_errors_ref = [i[0] for i in error_node_counts_ref]  
+    num_errors_gold = [i[0] for i in error_node_counts_gold]  
+    num_nodes = [i[1] for i in error_node_counts]
+    num_nodes_ref = [i[1] for i in error_node_counts_ref]
+    num_nodes_gold = [i[1] for i in error_node_counts_gold]
+    
+    keywords_dir = 'CodeBLEU/keywords/'
+    # ast_match = calc_code_bleu([codes_gold], codes, lang, keywords_dir)[2]
+    # dfg_match = calc_code_bleu([codes_gold], codes, lang, keywords_dir)[3]
+    
     rewards = np.zeros_like(code_ids, dtype=np.float)
-
+    ast_match_batch = 0
+    dfg_match_batch = 0
+    compile_batch = 0
     for i in range(len(rewards)):
         _, _, did_compile = compilation[i]
-        reward = 100 if did_compile else -100
-        rewards[i, min(eos_positions[i],max_len-1)] = reward
+        reward = 1 if did_compile else -1
         
-    return torch.Tensor(rewards)#, num_errors, num_nodes
+        ast_match = calc_code_bleu([[codes_gold[i]]], [codes[i]], lang, keywords_dir)[2]
+        dfg_match = calc_code_bleu([[codes_gold[i]]], [codes[i]], lang, keywords_dir)[3]
+
+        #for each episode optimization
+        # rewards[i, min(eos_positions[i],max_len-1)] = reward - 0.001*(num_nodes[i]-num_nodes_gold[i])**2
+        rewards[i, min(eos_positions[i],max_len-1)] = reward + ast_match + dfg_match
+        compile_batch += reward
+        ast_match_batch += ast_match
+        dfg_match_batch += dfg_match
+        
+        #only for batch episode optimization
+        # rewards[i, -1] = reward
+    mean_comp_rate = compile_batch/len(codes)
+    mean_ast_match =  ast_match_batch/len(codes) 
+    mean_dfg_match =  dfg_match_batch/len(codes)  
+    return torch.Tensor(rewards),mean_comp_rate,mean_ast_match,mean_dfg_match, num_errors, num_errors_ref, num_nodes, num_nodes_ref
 
