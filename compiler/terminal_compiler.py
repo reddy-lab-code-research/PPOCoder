@@ -86,20 +86,31 @@ class TerminalCompiler:
         #     os.remove(path)
         
         with tfile.NamedTemporaryFile(mode="w+",suffix=self.lang2ext[self.lang], delete=True, encoding = 'utf-8') as tf:
-
                 tf.write(code_string)
                 tf.flush()
                 file_path=tf.name
                 error, output = compile_prog(file_path, self.lang2compiler[self.lang])
+
+        # compiler_path = '/home/grads/parshinshojaee/trl_code/trl_code/rl_code_repo/compiler'
+        # with open(compiler_path + "/test"+self.lang2ext[self.lang], "w+", encoding = 'utf-8') as tf: 
+        #     tf.write(code_string)
+
+        #     file_path= compiler_path + "/test"+self.lang2ext[self.lang]
+        # error, output = compile_prog(file_path, self.lang2compiler[self.lang])
         
         if print_error:
             print("Error: ", error)
 
         if self.lang == "PHP":
-            if "[ERROR]" in output:
-                return error, output, False
-            elif "[OK] No errors" in output:
+            if "Errors parsing" in output:
+                    return error, output, False
+
+            elif "No syntax errors" in output:
                 return error, output, True
+            # if "[ERROR]" in output:
+            #     return error, output, False
+            # elif "[OK] No errors" in output:
+            #     return error, output, True
 
         if error:
             return error, output, False

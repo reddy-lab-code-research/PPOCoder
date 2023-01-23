@@ -1,0 +1,1 @@
+<?php function steps ( $N , $M ) { if ( $N == 1 ) return 0 ; return $M ; return 2 * $M + ( $N - 3 ) ; } $N = 4 ; $M = 4 ; echo steps ( $N , $M ) ; ?>

@@ -32,7 +32,8 @@ def compile_prog(filepath, lang):
     # elif lang=='C':
     #     cmd = 'gcc '+filepath
     elif lang=='PHP':
-        cmd = "/home/aneesh/MuST-CoST/vendor/bin/phpstan analyse -l 5 --no-progress " + filepath 
+        # cmd = "/home/aneesh/MuST-CoST/vendor/bin/phpstan analyse -l 5 --no-progress " + filepath 
+        cmd = 'php -l ' + filepath
         #cmd = 'php -l -d display_errors=on' + filepath
     elif lang=='JS':
         cmd = 'node '+filepath

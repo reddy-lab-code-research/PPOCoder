@@ -5,6 +5,7 @@ import torch
 from code_prepro.lang_processors import *
 from compiler.terminal_compiler import TerminalCompiler
 import sys
+from parser import DFG_python,DFG_java,DFG_ruby,DFG_go,DFG_php,DFG_javascript,DFG_csharp
 sys.path.insert(0, '/home/grads/parshinshojaee/trl_code/trl_code/rl_code_repo/CodeBLEU/')
 from calc_code_bleu import calc_code_bleu
 
@@ -26,9 +27,16 @@ lang2compiler = {
     "php": TerminalCompiler("PHP"),
 }
 
-
+dfg_function={
+    'python':DFG_python,
+    'java':DFG_java,
+    'php':DFG_php,
+    'javascript':DFG_javascript,
+    'c_sharp':DFG_csharp,
+    'c':DFG_csharp,
+    'cpp':DFG_csharp,}
 parsers={}        
-for lang in ['python']:
+for lang in dfg_function:
     LANGUAGE = Language('parser/my-languages.so', lang)
     parser = Parser()
     parser.set_language(LANGUAGE)   
@@ -92,9 +100,9 @@ def get_reward(code_ids=None, code_ref_ids=None,gold_ids=None, tokenizer=None):
     codes = [remove_special_tokens(code) for code in codes]
     codes_ref = [remove_special_tokens(code) for code in codes_ref]
     codes_gold = [remove_special_tokens(code) for code in codes_gold]
-    error_node_counts = [tree_sitter_full_compile(code) for code in codes]
-    error_node_counts_ref = [tree_sitter_full_compile(code) for code in codes_ref]
-    error_node_counts_gold = [tree_sitter_full_compile(code) for code in codes_gold]
+    error_node_counts = [tree_sitter_full_compile(code,lang) for code in codes]
+    error_node_counts_ref = [tree_sitter_full_compile(code,lang) for code in codes_ref]
+    error_node_counts_gold = [tree_sitter_full_compile(code,lang) for code in codes_gold]
     num_errors = [i[0] for i in error_node_counts]
     num_errors_ref = [i[0] for i in error_node_counts_ref]  
     num_errors_gold = [i[0] for i in error_node_counts_gold]  
@@ -145,9 +153,9 @@ def get_binary_compilation_reward(lang, code_ids=None,code_ref_ids=None,gold_ids
     codes = [remove_special_tokens(code) for code in codes]
     codes_ref = [remove_special_tokens(code) for code in codes_ref]
     codes_gold = [remove_special_tokens(code) for code in codes_gold]
-    error_node_counts = [tree_sitter_full_compile(code) for code in codes]
-    error_node_counts_ref = [tree_sitter_full_compile(code) for code in codes_ref]
-    error_node_counts_gold = [tree_sitter_full_compile(code) for code in codes_gold]
+    error_node_counts = [tree_sitter_full_compile(code,lang) for code in codes]
+    error_node_counts_ref = [tree_sitter_full_compile(code,lang) for code in codes_ref]
+    error_node_counts_gold = [tree_sitter_full_compile(code,lang) for code in codes_gold]
     num_errors = [i[0] for i in error_node_counts]
     num_errors_ref = [i[0] for i in error_node_counts_ref]  
     num_errors_gold = [i[0] for i in error_node_counts_gold]  
@@ -169,6 +177,7 @@ def get_binary_compilation_reward(lang, code_ids=None,code_ref_ids=None,gold_ids
         
         ast_match = calc_code_bleu([[codes_gold[i]]], [codes[i]], lang, keywords_dir)[2]
         dfg_match = calc_code_bleu([[codes_gold[i]]], [codes[i]], lang, keywords_dir)[3]
+        # breakpoint()
 
         #for each episode optimization
         # rewards[i, min(eos_positions[i],max_len-1)] = reward - 0.001*(num_nodes[i]-num_nodes_gold[i])**2

@@ -50,13 +50,13 @@ def write_summary(summary, path):
             f.write("\n")
             
 ################################################
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
 parent_dir = '/home/grads/parshinshojaee/trl_code/trl_code/datasets/'
 direct_path = "/home/grads/parshinshojaee/trl_code/trl_code/"
 dir_dict = {'javascript':'Javascript', 'java':'Java', 'c_sharp':'C#', 'php':'PHP', 'python':'Python', 'c':'C', 'cpp':'C++'}
 end_dict = {'javascript':'js', 'java':'java', 'c_sharp':'cs', 'php':'php', 'python':'py', 'c':'c', 'cpp':'cpp'}
 # l1, l2 = 'php', 'python'
-l1, l2 = 'cpp', 'python'
+l1, l2 = 'python', 'c_sharp'
 data_dir = parent_dir + dir_dict[l1] + '-' + dir_dict[l2] + '/'
 template = data_dir+'train-XXX-YYY-tok.xxx,'+data_dir+'train-XXX-YYY-tok.yyy'
 template = template.replace('XXX', dir_dict[l1]).replace('YYY', dir_dict[l2])
@@ -68,7 +68,7 @@ train_filename = template.replace('xxx', end_dict[l1]).replace('yyy', end_dict[l
 dev_filename = train_filename.replace('train', 'val')
 test_filename = train_filename.replace('train', 'test')
 baseline_output_dir = direct_path + 'baselines/codet5/saved_models/'+l1+'-'+l2+'/'
-load_model_path = direct_path + 'baselines/codet5/saved_models/'+l1+'-'+l2+'/checkpoint-best-bleu/pytorch_model.bin'
+load_model_path = direct_path + 'baselines/codet5/saved_models/'+l1+'-'+l2+'/checkpoint-best-bleu2/pytorch_model.bin'
 output_dir = direct_path + 'saved_models/codet5/saved_models/'+l1+'-'+l2
 
 class Args():
@@ -78,34 +78,57 @@ class Args():
         self.test_filename = test_filename
         self.baseline_output_dir = baseline_output_dir
         self.load_model_path = load_model_path
-        self.max_source_length = 320#400
-        self.max_target_length = 320#400
+        self.max_source_length = 400#400
+        self.max_target_length = 400#400
         self.train_batch_size = 16
         self.output_dir = output_dir
         self.reward_id = 2
-        self.run = 6
+        self.run = 4
         self.loss_W = 10
-        self.lr = 1e-6
+        self.lr = 1e-5
         self.kl_coef = 1
         self.reward_W = 0.01
+        self.action_space = 10000
+        self.ns = 5
         if not(os.path.exists(self.output_dir)):
             os.makedirs(self.output_dir)  
             
             
 args = Args()
-path = args.output_dir + '/codet5_ppo' + '_reward%d'%(args.reward_id) +  '_bs%d'%(args.train_batch_size) + '_in-len%d'%(args.max_source_length) + '_out-len%d'%(args.max_target_length) +'_r%d/'%(args.run)      
+# path = args.output_dir + '/codet5_ppo' + '_reward%d'%(args.reward_id) +  '_bs%d'%(args.train_batch_size) + '_in-len%d'%(args.max_source_length) + '_out-len%d'%(args.max_target_length) +'_r%d/'%(args.run)  
+# path = args.output_dir + '/codet5_ppo' + '_reward%d'%(args.reward_id) +  '_bs%d'%(args.train_batch_size) + '_in-len%d'%(args.max_source_length) + '_out-len%d'%(args.max_target_length) +'_r%d'%(args.run)+'_as%d/'%(args.action_space)    
+path = args.output_dir + '/codet5_ppo' + '_reward%d'%(args.reward_id) +  '_bs%d'%(args.train_batch_size) + '_in-len%d'%(args.max_source_length) + '_out-len%d'%(args.max_target_length) +'_r%d'%(args.run)+'_as%d'%(args.action_space)+'_ns%d/'%(args.ns)  
+# path = args.output_dir + '/codet5_ppo' + '_reward%d'%(args.reward_id) +  '_bs%d'%(args.train_batch_size) + '_in-len%d'%(args.max_source_length) + '_out-len%d'%(args.max_target_length) +'_r%d'%(args.run)+'_as%d'%(args.action_space)+'_ns%d'%(args.ns)+'_v2/'  
 ################################################
- 
+#  
 # data_path = "./RL_experiments/preds/codet5_ppo_r67/"
 data_path = path
+# data_path = 'saved_models/codet5/saved_models/'+l1+'-'+l2 +'/'
 # data_path = baseline_output_dir
-lang_pair = 'PHP-Python'
+# data_path = direct_path + 'datasets3/humaneval-x/'
+# data_path = direct_path + 'datasets3/leetcode/'
+# data_path = direct_path + 'baselines/codet5/leetcode_saved_models/'+dir_dict[l1]+'-'+dir_dict[l2]+'/'
+# data_path = 'saved_models/codet5/saved_models/'+l1+'-'+l2 +'/leetcode_bs16_len400_as2_ns50_r5/'
+lang_pair = 'Python-C#'
+print(lang_pair,'- AS:',  args.action_space, '- NS: ', args.ns)
 #all_experiments = os.listdir(data_path)
 
 #all_experiments = ['Java-C++', 'Java-Python', 'Python-C++', 'Python-Java', 'C++-Java', 'C++-Python']
-#                    'C++-Python', 'C++-PHP', 'C++-C', 'Python-C#', 'Python-Java', 'Python-C', 'Python-PHP', 'Python-C++']
-all_experiments = ['test.model_ep0','train.model_ep0']
-# all_experiments = ['test.output_maxlen320','train.output_maxlen320']
+                #    'C++-Python', 'C++-PHP', 'C++-C', 'Python-C#', 'Python-Java', 'Python-C', 'Python-PHP', 'Python-C++']
+all_experiments = ['train.model_ep1']
+# all_experiments = ['test.model_ep0','train.model_ep0','test.model_ep1','train.model_ep1','test.model_ep2','train.model_ep2','test.model_ep3','train.model_ep3']
+# all_experiments = ['test.model_ep2','train.model_ep2','test.model_ep3','train.model_ep3','test.model_ep4','train.model_ep4','test.model_ep5','train.model_ep5','test.model_ep6','train.model_ep6']
+# all_experiments = ['test.model_ep0','train.model_ep0','test.model_ep1','train.model_ep1','test.model_ep2','train.model_ep2','test.model_ep3','train.model_ep3','test.model_ep4','train.model_ep4']
+# all_experiments = ['train.model_ep9','test.model_ep10','train.model_ep10','test.model_ep11','train.model_ep11','test.model_ep12','train.model_ep12','test.model_ep13','train.model_ep13','test.model_ep14','train.model_ep14','test.model_ep15','train.model_ep15','test.model_ep16','train.model_ep16']
+# 'test.model_ep6','train.model_ep6','test.model_ep7','train.model_ep7','test.model_ep8','train.model_ep8','test.model_ep9','train.model_ep9','test.model_ep10','train.model_ep10','test.model_ep11','train.model_ep11','test.model_ep12','train.model_ep12','test.model_ep13','train.model_ep13','test.model_ep14','train.model_ep14','test.model_ep15','train.model_ep15'
+# all_experiments = ['train.output_maxlen320_v3-2']
+# all_experiments = ['test.model.humanevalx']
+# all_experiments = ['train.model.codexglue']
+# all_experiments = ['train.model.leetcode']
+# all_experiments = ['test-cpp-humaneval.cpp']
+# all_experiments = ['test-python-humaneval.py']
+# all_experiments = ['test-java-humaneval.java']
+# all_experiments = ['test.txt.py']
 
 
 
@@ -157,6 +180,9 @@ for experiment in all_experiments:
         
         if lang != "PHP":
             code_string = file_detokenizers[lang](code_string)
+        
+        # if lang == 'C++':
+        #     code_string = code_string + 'int main() { return 0;}'
 
         error, output, did_compile = lang2compiler[lang].compile_code_string(code_string)
         #print(error, output, did_compile)
