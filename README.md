@@ -2,26 +2,37 @@
 
 Official Implementation of "Execution-based Neural Code Generation using Proximal Policy Optimization"
 
+## Overview
+
+
+
 ## Environment Installation
+To run the code, install the dependencies in requirements.txt.
 ```
 pip install -r requirements.txt
 ```
 
 
 ## Datasets
+We finetune/evaluate models on the following major dataset benchmarks for different code generation tasks:
 
-Ee finetune/evaluate models on the following major dataset benchmarks for different code generation tasks:
+* **CodeSearchNet(CSN)** is available [here](https://github.com/github/CodeSearchNet##data-details)
+* **XLCoST** is available [here](https://github.com/reddy-lab-code-research/XLCoST)
+* **APPS** is available [here](https://github.com/hendrycks/apps)
+* **MBPP** is available [here](https://github.com/google-research/google-research/tree/master/mbpp)
 
-* **CodeSearchNet(CSN)**: The dataset is available [here](https://github.com/github/CodeSearchNet##data-details)
-* **XLCoST**: The dataset is available [here](https://github.com/reddy-lab-code-research/XLCoST)
-* **APPS**: The dataset is available [here](https://github.com/hendrycks/apps)
-* **MBPP**: The dataset is available [here](https://github.com/google-research/google-research/tree/master/mbpp)
-
-We preprocess the data and construct input/output sequences in the same manner as outlined in the original benchmark papers for all benchmarks. Unzip and place all benchmarks in the `data` folder.
+We preprocess the data and construct input/output sequences in the same manner as outlined in the original benchmark papers. Unzip and place all benchmarks in the `data` folder.
 
 
 ## Run
-The run module supports various parameters input:
+We have created `run.sh` script to execute PPO-based PL model fine-tuning based on the compiler signal. To run the script for different code generation tasks, configure the following parameters:
+
+|   **Parameters**  |                                              **Description**                                             |       **Example Values**       |
+|:-----------------:|:--------------------------------------------------------------------------------------------------------:|:------------------------------:|
+| `l1`        | Source Language                                                                     | java,python,cpp,cs,nl,php,csharp,c |
+| `l2`    | Target Language                                  | models/codet5_tokenizer/       |
+
+
 
 ```bash
 cd PPOCoder
@@ -45,3 +56,19 @@ python rl_run.py --run 1 \ #int: run ID
 ```
 
 You can apply this code on different tasks by modifying differnet parameters. 
+
+
+
+## Citation
+<!-- If you find the paper or the source code useful to your projects, please cite the following bibtex: 
+<pre>
+@inproceedings{
+	le2022coderl,
+	title={Code{RL}: Mastering Code Generation through Pretrained Models and Deep Reinforcement Learning},
+	author={Hung Le and Yue Wang and Akhilesh Deepak Gotmare and Silvio Savarese and Steven Hoi},
+	booktitle={Advances in Neural Information Processing Systems},
+	editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
+	year={2022},
+	url={https://openreview.net/forum?id=WaGvb7OzySA}
+}
+</pre> -->
