@@ -8,8 +8,8 @@ The utilization of programming language (PL) models, pretrained on large-scale c
 <p align="center">
 <img src="images/ppocoder_overview.jpg" width="80%" />
  <br>
-<b>Overview of the \modelname with actor and critic models</b>: The action is sampled from the policy based on the given source data $x$ (NL or PL). 
-Then, a reward is obtained for each action to guide and control policy updates. The reward function is composed of four elements: **(a) compiler feedback**; **(b) syntactic matching score based on ASTs**; **(c) semantic matching score based on DFGs**; and (**d) KL-divergence penalty between active policy and the reference pretrained model**. The critic model estimates value based on the obtained reward and PPOCoder will be optimized with PPO, which takes into account both value and policy optimization.
+<b>Overview of the PPOCoder with actor and critic models</b>: The action is sampled from the policy based on the given source data $x$ (NL or PL). 
+Then, a reward is obtained for each action to guide and control policy updates. The reward function is composed of four elements: <b>(a) compiler feedback<b>; <b>(b) syntactic matching score based on ASTs<b>; <b>(c) semantic matching score based on DFGs<b>; and <b>(d) KL-divergence penalty between active policy and the reference pretrained model<b>. The critic model estimates value based on the obtained reward and PPOCoder will be optimized with PPO, which takes into account both value and policy optimization.
 </p>
 
 
