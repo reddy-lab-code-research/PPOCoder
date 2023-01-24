@@ -1,1 +1,18 @@
-python rl_run.py --l1 java --l2 python --asp 5 --ns 10
+python rl_run.py \
+--run 1 \
+--l1 java \
+--l2 cpp \
+--asp 5 \
+--ns 10 \
+-- data_path /home/grads/parshinshojaee/PPOCodder/dataset/ \
+--outpu_path /home/grads/parshinshojaee/PPOCodder/saved_models/ \
+--load_model_path /home/grads/parshinshojaee/PPOCodder/baselines/saved_models/java-cpp/pytorch_model.bin \
+--baseline_out_dir /home/grads/parshinshojaee/PPOCodder/baselines/saved_models/java-cpp/ \
+--max_source_length 400 \
+--max_target_length 400 \
+--train_batch_size 32 \
+--test_batch_size 48 \
+--lr 1e-6 \
+--kl_coef 0.1 \
+--kl_target 1 \
+--vf_coef 1e-3
