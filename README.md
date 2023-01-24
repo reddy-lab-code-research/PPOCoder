@@ -1,10 +1,10 @@
 # PPOCoder
 
 Official Implementation of "Execution-based Neural Code Generation using Proximal Policy Optimization"
-
+<!-- 
 ## Overview
 
-
+ -->
 
 ## Environment Installation
 To run the code, install the dependencies in requirements.txt.
@@ -59,7 +59,7 @@ You can apply this code on different tasks by modifying differnet parameters.
 
 
 
-## Citation
+<!-- ## Citation -->
 <!-- If you find the paper or the source code useful to your projects, please cite the following bibtex: 
 <pre>
 @inproceedings{
