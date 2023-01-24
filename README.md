@@ -27,11 +27,11 @@ We preprocess the data and construct input/output sequences in the same manner a
 ## Run
 We have created `run.sh` script to execute PPO-based PL model fine-tuning based on the compiler signal. To run the script for different code generation tasks, configure the following parameters:
 
-|   **Parameters**  |                                              **Description**                                             |       **Example Values**       |
+<!-- |   **Parameters**  |                                              **Description**                                             |       **Example Values**       |
 |:-----------------:|:--------------------------------------------------------------------------------------------------------:|:------------------------------:|
 | `l1`        | Source Language                                                                     | java,python,cpp,cs,nl,php,csharp,c |
 | `l2`    | Target Language                                  | models/codet5_tokenizer/       |
-
+ -->
 
 
 ```bash
