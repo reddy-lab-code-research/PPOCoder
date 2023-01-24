@@ -3,6 +3,14 @@
 Official Implementation of "Execution-based Neural Code Generation using Proximal Policy Optimization"
 
 ## Overview
+The utilization of programming language (PL) models, pretrained on large-scale code corpora, as a means of automating software engineering processes has demonstrated considerable potential in streamlining various code generation tasks such as code completion, code translation, and program synthesis. However, current approaches mainly rely on supervised fine-tuning objectives borrowed from text generation, neglecting specific sequence-level features of code, including but not limited to compilability as well as syntactic and functional correctness. To address this limitation, we propose **PPOCoder**, a new framework for code generation that combines pretrained PL models with Proximal Policy Optimization (PPO) deep reinforcement learning and employs execution feedback as the external source of knowledge into the model optimization. PPOCoder is transferable across different code generation tasks and PLs.
+
+<p align="center">
+<img src="images/ppocoder_overview.jpg" width="100%" />
+ <br>
+<b>Overview of the \modelname with actor and critic models</b>: The action is sampled from the policy based on the given source data $x$ (NL or PL). 
+Then, a reward is obtained for each action to guide and control policy updates. The reward function is composed of four elements: ($a$) compiler feedback; ($b$) syntactic matching score based on ASTs; ($c$) semantic matching score based on DFGs; and ($d$) KL-divergence penalty between active policy and the reference pretrained model. The critic model estimates value based on the obtained reward and \modelname will be optimized with PPO, which takes into account both value and policy optimization.
+</p>
 
 
 
