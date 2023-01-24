@@ -56,7 +56,7 @@ We have created `run.sh` script to execute PPO-based PL model fine-tuning based 
 | `run`    | Index of the run                                 | 1      |
 
 
-Running `run.sh` saves generated programs in a txt file and the model weights at the end of each epoch.
+Running `run.sh` saves generated programs in a `.txt` file and the model weights at the end of each epoch.
 
 <!-- ```bash
 cd PPOCoder
