@@ -1,1 +1,1 @@
-Download the [XLCoST](https://github.com/reddy-lab-code-research/XLCoST) dataset for the pair of six different programming languages. The program-level data for Java-C++ (or C++-Java) translations is added as example.
+Download the [XLCoST](https://github.com/reddy-lab-code-research/XLCoST) dataset for the pair of six different programming languages (Java, Python, C++, C#, PHP, C). The program-level data for Java-C++ (or C++-Java) translations is added as example.
