@@ -30,7 +30,7 @@ python rl_run.py --run 1 \ #int: run ID
         --l2 cpp \ #str: target language
         --asp 5 \ #int: action space size
         --ns 10 \ #int: number of synthetic samples
-        -- data_path DATA-PATH \ #str: directory of the dataset
+        --data_path DATA-PATH \ #str: directory of the dataset
         --outpu_path OUTPUT-PATH \ #str: directory of the output
         --load_model_path LOAD-MODEL-PATH\ #str: path of the base model (before RL)
         --baseline_out_dir BASELINE-PATH \ #str: path of the baseline experiments
