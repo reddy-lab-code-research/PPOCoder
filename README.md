@@ -29,8 +29,24 @@ We have created `run.sh` script to execute PPO-based PL model fine-tuning based 
 
 |   **Parameters**  |                                              **Description**                                             |       **Example Values**       |
 |:-----------------:|:--------------------------------------------------------------------------------------------------------:|:------------------------------:|
-| `l1`        | Source Language                                                                     | java,python,cpp,cs,nl,php,csharp,c |
-| `l2`    | Target Language                                  | models/codet5_tokenizer/       |
+| `l1`        | Source Language                                                                     | java |
+| `l2`    | Target Language                                  | cpp       |
+| `asp`    | Action Space Size                                 | 5      |
+| `ns`    | Number of Synthetic Samples                                 | 10      |
+| `data_path`    | Path to the original data samples                                 | data/xlcost/java-cpp/      |
+| `output_path`    | Path to save generations and outputs                                 | saved_results/java-cpp/      |
+| `baseline_output_dir`    | Path to the vase finetuned CodeT5 (bfeor RL) outputs                                 | baselines/saved_models/java-cpp/     |
+| `load_model_path`    | Path to the base finetuned CodeT5 model (before RL) for each downstream task                                 | baselines/saved_models/java-cpp/pytorch_model.bin     |
+| `max_source_length`    | Maxmim Sournce Length                                 | 400     |
+| `max_target_length`    | Maxmim Target Length                                 | 400     |
+| `train_batch_size`    | Training Batch Size                                 | 32     |
+| `test_batch_size`    | Testing Batch Size                                 | 48     |
+| `lr`    | Learning Rate                                 | 1e-6     |
+| `kl_coef`    | Initial coefficient of the KL divergence penalty in the reward                                 | 0.1     |
+| `kl_target`    | Tararget of the KL which adaptively controls the KL coefficient                                 | 1     |
+| `vf_coef`    | Coefficient of the vf error in the ppo loss                                 | 1e-3     |
+| `run`    | Index of the run                                 | 1      |
+
 
 
 ```bash
@@ -41,7 +57,7 @@ python rl_run.py --run 1 \ #int: run ID
         --asp 5 \ #int: action space size
         --ns 10 \ #int: number of synthetic samples
         --data_path DATA-PATH \ #str: directory of the dataset
-        --outpu_path OUTPUT-PATH \ #str: directory of the output
+        --output_path OUTPUT-PATH \ #str: directory of the output
         --load_model_path LOAD-MODEL-PATH\ #str: path of the base model (before RL)
         --baseline_out_dir BASELINE-PATH \ #str: path of the baseline experiments
         --max_source_length 400 \ #int: maximum length in the source language
