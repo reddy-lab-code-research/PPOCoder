@@ -48,8 +48,9 @@ We have created `run.sh` script to execute PPO-based PL model fine-tuning based 
 | `run`    | Index of the run                                 | 1      |
 
 
+Running `run.sh` saves generated programs in a txt file and the model weights at the end of each epoch.
 
-```bash
+<!-- ```bash
 cd PPOCoder
 python rl_run.py --run 1 \ #int: run ID 
         --l1 java \ #str: source language
@@ -70,7 +71,7 @@ python rl_run.py --run 1 \ #int: run ID
         --vf_coef 1e-3 #float: coefficient of the vf error in the ppo loss 
 ```
 
-You can apply this code on different tasks by modifying differnet parameters. 
+You can apply this code on different tasks by modifying differnet parameters.  -->
 
 
 
