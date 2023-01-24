@@ -31,33 +31,38 @@ parser.add_argument("--l2", default=None, type=str,
 parser.add_argument("--asp", default=2, type=int,
                     help="action space")  
 parser.add_argument("--ns", default=5, type=int,
-                    help="num syn samples")  
+                    help="num syn samples") 
+parser.add_argument("--data_path", default=None, type=str,
+                    help="data parent directory")  
+parser.add_argument("--output_path", default=None, type=str,
+                    help="output directory")
+parser.add_argument("--load_model_path", default=None, type=str,
+                    help="path to load models")
+parser.add_argument("--baseline_output_path", default=None, type=str,
+                    help="path to load models")
+  
 
-args2 = parser.parse_args()
+args = parser.parse_args()
 
 
 os.environ["CUDA_VISIBLE_DEVICES"]="1"
-parent_dir = '/home/grads/parshinshojaee/trl_code/trl_code/datasets2/'
-direct_path = "/home/grads/parshinshojaee/trl_code/trl_code/"
+data_parent_dir = args.data_path
 dir_dict = {'javascript':'Javascript', 'java':'Java', 'c_sharp':'C#', 'php':'PHP', 'python':'Python', 'c':'C', 'cpp':'C++'}
 end_dict = {'javascript':'js', 'java':'java', 'c_sharp':'cs', 'php':'php', 'python':'py', 'c':'c', 'cpp':'cpp'}
-# l1, l2 = 'python', 'php'
-# l1, l2 = 'c_sharp', 'python'
-l1, l2 = args2.l1, args2.l2
-data_dir = parent_dir + dir_dict[l1] + '-' + dir_dict[l2] + '/'
+l1, l2 = args.l1, args.l2
+data_dir = data_parent_dir + dir_dict[l1] + '-' + dir_dict[l2] + '/'
 template = data_dir+'train-XXX-YYY-tok.xxx,'+data_dir+'train-XXX-YYY-tok.yyy'
 template = template.replace('XXX', dir_dict[l1]).replace('YYY', dir_dict[l2])
 if not(os.path.exists(data_dir)):
-    data_dir = parent_dir + dir_dict[l2] + '-' + dir_dict[l1] + '/'
+    data_dir = data_parent_dir + dir_dict[l2] + '-' + dir_dict[l1] + '/'
     template = data_dir+'train-XXX-YYY-tok.xxx,'+data_dir+'train-XXX-YYY-tok.yyy'
     template = template.replace('XXX', dir_dict[l2]).replace('YYY', dir_dict[l1])
 train_filename = template.replace('xxx', end_dict[l1]).replace('yyy', end_dict[l2])
 dev_filename = train_filename.replace('train', 'val')
 test_filename = train_filename.replace('train', 'test')
-baseline_output_dir = direct_path + 'baselines/codet5/saved_models/'+l1+'-'+l2+'/'
-load_model_path = direct_path + 'baselines/codet5/saved_models/'+l1+'-'+l2+'/checkpoint-best-bleu/pytorch_model.bin'
-# load_model_path = direct_path + 'baselines/codet5/saved_models/'+l1+'-'+l2+'/checkpoint-best-bleu2/pytorch_model.bin'
-output_dir = direct_path + 'saved_models/codet5/saved_models/'+l1+'-'+l2
+baseline_output_dir = args.baseline_output_path + '/'+l1+'-'+l2+'/'
+load_model_path = args.load_model_path
+output_dir = args.output_path + '/'+l1+'-'+l2+'/'
 
 dfg_function={
     'python':DFG_python,
@@ -386,12 +391,11 @@ for ep in range(args.train_epochs):
 
             nsteps += 1
             #save all the results
-            direct_path = "/home/grads/parshinshojaee/trl_code/trl_code/"
             # with open(direct_path + 'results/baselines.csv', 'a') as f:
             # with open(direct_path + 'results/codet5_ppo_steps.csv', 'a') as f:
             # with open(direct_path + 'results/codet5_ppo_steps5.csv', 'a') as f:
             # with open(direct_path + 'results/codet5_ppo_cpp_python5.csv', 'a') as f:
-            with open(direct_path + 'results/final/codet5_ppo_'+l1+'-'+l2+'.csv', 'a') as f:
+            with open('results/final/codet5_ppo_'+l1+'-'+l2+'.csv', 'a') as f:
                 f.write( datetime.datetime.now().strftime("%H:%M:%S") +  
                         ',CodeT5_PPO' +
                         ',' + 'reward_'+ str(args.reward_id) + 

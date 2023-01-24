@@ -11,11 +11,8 @@ import torch
 import collections
 import time
 import random
-# from .get_reward import get_reward, get_binary_compilation_reward
 from transformers import RobertaTokenizer
-# from transformers import get_linear_schedule_with_warmup
-
-from core import (logprobs_from_logits,
+from utils import (logprobs_from_logits,
                          whiten,
                          clip_by_value,
                          entropy_from_logits,
@@ -27,10 +24,6 @@ from core import (logprobs_from_logits,
 
 
 class AdaptiveKLController:
-    """
-    Adaptive KL controller described in the paper:
-    https://arxiv.org/pdf/1909.08593.pdf
-    """
     def __init__(self, init_kl_coef, target, horizon):
         self.value = init_kl_coef
         self.target = target
@@ -44,7 +37,6 @@ class AdaptiveKLController:
 
         
 class FixedKLController:
-    """Fixed KL controller."""
     def __init__(self, kl_coef):
         self.value = kl_coef
 
@@ -55,22 +47,20 @@ class FixedKLController:
 class PPOTrainer:
 
     default_params = {
-        "lr": 1e-5,#1.41e-5,
-        "adap_kl_ctrl": True, #True
-        "init_kl_coef": 100, #0,
-        "target": 6,#6,
+        "lr": 1e-5,
+        "adap_kl_ctrl": True, 
+        "init_kl_coef": 100, 
+        "target": 6,
         "horizon":10000,
         "gamma":1,
         "lam":0.95,
         "cliprange": .2,
         "cliprange_value":.2,
-        "vf_coef":.1, #0.1
-        "batch_size": 48,#256,
+        "vf_coef":0.1, 
+        "batch_size": 48,
         "forward_batch_size": 16,
         "ppo_epochs": 4,
-        "node_loss_coef": 0.01, 
         "device": torch.device("cuda"),
-        "reward_coef": 1e-7,
         'adam_eps': 1e-8
     }
 
@@ -80,11 +70,10 @@ class PPOTrainer:
 
         self.ref_model = ref_model
         self.model = model
-        # self.optimizer = Adam(model.parameters(), lr=self.ppo_params['lr'])
         self.optimizer = AdamW(model.parameters(), lr=self.ppo_params['lr'], eps=self.ppo_params['adam_eps'])
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer = self.optimizer, factor =1. / np.cbrt(2), patience= 100, verbose = True)
         self.metric = 0
-        
+  
         if self.ppo_params['adap_kl_ctrl']:
             self.kl_ctl = AdaptiveKLController(self.ppo_params['init_kl_coef'],
                                                self.ppo_params['target'],
@@ -94,10 +83,6 @@ class PPOTrainer:
 
 
     def step(self, source_ids, source_mask, response_ids,response_ids_ref, scores):
-        """
-        Run a PPO optimisation step.
-        """
-
         bs = source_ids.size()[0]
         timing = dict()
         t0 = time.time()
@@ -114,31 +99,18 @@ class PPOTrainer:
         all_stats = []
         idxs = list(range(bs))
         max_target_len = response_ids.size()[1]
-        # for _ in range(self.ppo_params['ppo_epochs']):
-        # Optimizer After Each Code Samples
-        # random.shuffle(idxs)
-        #################################
+
         for i in range(bs):
             idx = idxs[i]
             curr_len = (np.array(response_ids.cpu()[idx,:])==self.ppo_params['eos_token_id']).argmax() + 1
-            # breakpoint()
             train_stats = self.train_minibatch(logprobs[idx:idx+1, :curr_len], values[idx:idx+1, :curr_len],
                                                 rewards[idx:idx+1, :curr_len], source_ids[idx:idx+1],
                                                 source_mask[idx:idx+1], response_ids[idx:idx+1,:curr_len],response_ids_ref[idx:idx+1,:curr_len])
             all_stats.append(train_stats)
-        ##################################
-        #MODIFIED: VECTORIZE THE BATCH PROCESS -> #Optimizer After Each Batch 
-        # train_stats = self.train_minibatch(logprobs, values,
-        #                                         rewards, source_ids,
-        #                                         source_mask, response_ids,response_ids_ref)
-        # all_stats.append(train_stats)
-        ##################################
+        
         timing['time/ppo/optimize_step'] = time.time()-t
-
         t = time.time()
         train_stats = stack_dicts(all_stats)
-
-        # reshape advantages/ratios such that they are not averaged.
         train_stats['policy/advantages'] = torch.flatten(train_stats['policy/advantages']).unsqueeze(0)
         train_stats['policy/ratio'] = torch.flatten(train_stats['policy/ratio']).unsqueeze(0)
 
@@ -154,64 +126,44 @@ class PPOTrainer:
         stats.update(timing)
         return stats
 
+
     def batched_forward_pass(self, source_ids, source_mask, response_ids):
         with torch.no_grad():
             logits, _, values = self.model(input_ids=source_ids, attention_mask=source_mask, labels=response_ids)
             ref_logits, _, _ = self.ref_model(input_ids=source_ids, attention_mask=source_mask, labels=response_ids)
-        
         values = values.detach()
         logprobs = logprobs_from_logits(logits, response_ids).detach()
         ref_logprobs = logprobs_from_logits(ref_logits, response_ids).detach()
         
         return logprobs, ref_logprobs, values
 
+
     def train_minibatch(self, logprobs, values, rewards, source_ids, source_mask, response_ids,response_ids_ref): 
         """Train one PPO minibatch"""
-        # loss_p, loss_v,loss_node,loss_error,loss_comp, train_stats  = self.loss(logprobs, values, rewards, source_ids, source_mask, response_ids,response_ids_ref)
         loss_p, loss_v, train_stats  = self.loss(logprobs, values, rewards, source_ids, source_mask, response_ids,response_ids_ref)
         loss = loss_p + loss_v 
-        # + loss_node - loss_comp
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
         self.scheduler.step(self.metric)
-        # breakpoint()
         return train_stats
+
 
     def compute_rewards(self, scores, logprobs, ref_logprobs):
         """Compute per token rewards from scores and KL-penalty."""
         kl = logprobs - ref_logprobs
-        
-        ########################################
-        ##TODO: MPDIFY THE KL HERE
-        # kl = torch.max(-kl,kl)
-        # kl = ref_logprobs.exp() * (ref_logprobs - logprobs)
-        #####################
-        # kl_list = []
-        # for tokenid in range(logprobs.shape[1]):
-        #     # kl_ = ref_logprobs[:,tokenid,:].exp() * (ref_logprobs[:,tokenid,:] - logprobs[:,tokenid,:])
-        #     kl_ = logprobs[:,tokenid,:].exp() * (logprobs[:,tokenid,:] - ref_logprobs[:,tokenid,:])
-        #     kl_= kl_.sum(dim=-1)
-        #     kl_list.append(kl_)
-        # kl  = torch.stack(kl_list)
-        # kl = kl.transpose(0,1)
-        # breakpoint()
-        ########################################
         non_score_reward = -self.kl_ctl.value * kl
         rewards = non_score_reward.clone().detach() 
         print ('kl reward', rewards.mean(axis=-1))
         rewards += self.ppo_params['reward_coef']*scores
-        print ('comp reward', scores.sum(axis=-1))
-        # breakpoint()
+        print ('score reward', scores.sum(axis=-1))
         return rewards, non_score_reward, self.kl_ctl.value
 
+
     def loss(self, old_logprobs, values, rewards, source_ids, source_mask, response_ids,response_ids_ref): ##MODIFIED
-        """Calculate policy and value losses."""
         lastgaelam = 0
         advantages_reversed = []
         gen_len = response_ids.size()[1]
-        # curr_len = (np.array(response_ids.cpu())==self.ppo_params['eos_token_id']).argmax() + 1
-
         for t in reversed(range(gen_len)):
             nextvalues = values[:, t + 1] if t < gen_len - 1 else 0.0
             delta = rewards[:, t] + self.ppo_params['gamma'] * nextvalues - values[:, t]
@@ -225,12 +177,6 @@ class PPOTrainer:
 
         logits, _, vpred = self.model(input_ids=source_ids, attention_mask=source_mask, labels=response_ids)
         logprob = logprobs_from_logits(logits, response_ids)
-        ###########################################
-        #NEW ADDED
-        # logprob = torch.gather(logprob, 2, response_ids.unsqueeze(2)).squeeze(-1)
-        # old_logprobs = torch.gather(old_logprobs, 2, response_ids.unsqueeze(2)).squeeze(-1)
-        ###########################################
-        
         vpredclipped = clip_by_value(vpred,
                                      values - self.ppo_params["cliprange_value"],
                                      values + self.ppo_params["cliprange_value"])
@@ -247,34 +193,13 @@ class PPOTrainer:
                                                1.0 + self.ppo_params['cliprange'])
         pg_loss = torch.mean(torch.max(pg_losses, pg_losses2))
         pg_clipfrac = torch.mean(torch.gt(pg_losses2, pg_losses).double())
-        
-        ###################################
-        #TODO: MODIFIED: ADDED NODE CONSTRAINT DIRECTLY TO LOSS
-        # tokenizer = RobertaTokenizer.from_pretrained("Salesforce/codet5-base", do_lower_case=False)
-        # num_nodes = get_reward(code_ids=response_ids, code_ref_ids=response_ids_ref, tokenizer=tokenizer)[3]
-        # num_nodes_ref = get_reward(code_ids=response_ids, code_ref_ids=response_ids_ref, tokenizer=tokenizer)[4]
-        # # breakpoint()
-        # # node_loss = torch.tensor((num_nodes_ref-num_nodes)**2).to(self.ppo_params['device'])
-        # node_loss = torch.mean((torch.tensor(num_nodes_ref).float()-torch.tensor(num_nodes).float())**2).to(self.ppo_params['device'])
-        # # node_loss = node_loss.item()
-        
-        # num_errors = get_reward(code_ids=response_ids, code_ref_ids=response_ids_ref, tokenizer=tokenizer)[1]
-        # # num_errors_ref = get_reward(code_ids=response_ids, code_ref_ids=response_ids_ref, tokenizer=tokenizer)[2]
-        # error_loss = torch.mean( (torch.tensor(num_errors).float()) )
-        
-        # comp_fdb = get_binary_compilation_reward(lang = 'python', code_ids=response_ids, code_ref_ids=response_ids_ref, tokenizer=tokenizer)[0]
-        # comp_loss = torch.mean( (torch.tensor(comp_fdb).float()) )
-        # breakpoint()
-        ##################################
 
         loss = pg_loss + self.ppo_params['vf_coef'] * vf_loss
 
         entropy = torch.mean(entropy_from_logits(logits))
         approxkl = .5 * torch.mean((logprob - old_logprobs)**2)
-        ###################
-        ##TODO: MPDIFY THE KL HERE
+
         policykl = torch.mean(logprob - old_logprobs)
-        ###################
         return_mean, return_var = torch.mean(returns), torch.var(returns)
         value_mean, value_var = torch.mean(values), torch.var(values)
 
@@ -284,40 +209,16 @@ class PPOTrainer:
                         advantages=advantages, advantages_mean=torch.mean(advantages), ratio=ratio),
             returns=dict(mean=return_mean, var=return_var),
             val=dict(vpred=torch.mean(vpred), error=torch.mean((vpred - returns) ** 2),
-                     clipfrac=vf_clipfrac, mean=value_mean, var=value_var),
-        )
-        
-        # w1 = pg_loss.item()/vf_loss.item()
-        # w2 = pg_loss.item()/node_loss.item()
-        # breakpoint()
-        # return pg_loss, self.ppo_params['vf_coef'] * vf_loss, self.ppo_params['node_loss_coef'] * node_loss, self.ppo_params['vf_coef']*10 *error_loss,self.ppo_params['vf_coef']*100 *comp_loss, flatten_dict(stats)
+                     clipfrac=vf_clipfrac, mean=value_mean, var=value_var),)
+
         return pg_loss, self.ppo_params['vf_coef'] * vf_loss, flatten_dict(stats)
 
     def record_step_stats(self, kl_coef, **data):
         """Record training step statistics."""
         kl = data['logprobs'] - data['ref_logprobs']
-        ##########################################
-        ##TODO: MPDIFY THE KL HERE
-        # kl = data['ref_logprobs'].exp() * (data['ref_logprobs'] - data['logprobs'])
-        # kl = torch.max(-kl,kl)
-        ##########
-        # kl_list = []
-        # for tokenid in range(data['logprobs'].shape[1]):
-        #     # kl_ = data['ref_logprobs'][:,tokenid,:].exp() * (data['ref_logprobs'][:,tokenid,:] -data['logprobs'][:,tokenid,:])
-        #     kl_ = data['logprobs'][:,tokenid,:].exp() * (data['logprobs'][:,tokenid,:] - data['ref_logprobs'][:,tokenid,:])
-        #     kl_ = kl_.sum(dim=-1)
-        #     kl_list.append(kl_)
-        # kl  = torch.stack(kl_list)
-        # kl = kl.transpose(0,1)
-        # breakpoint()
-        ##########################################
         mean_kl = torch.mean(torch.sum(kl, axis=-1))
         mean_kl = torch.max(-mean_kl,mean_kl)
         mean_entropy = torch.mean(torch.sum(-data['logprobs'], axis=1))
-        ################
-        #MODIFIED:
-        # mean_entropy = torch.mean(torch.sum(-torch.gather(data['logprobs'], 2, data['response_ids'].unsqueeze(2)).squeeze(-1), axis=1))
-        ################
         mean_non_score_reward =torch.mean(torch.sum(data['non_score_reward'], axis=1))
         stats = {
             'objective/kl': mean_kl,
