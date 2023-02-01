@@ -84,7 +84,7 @@ You can apply this code on different tasks by modifying differnet parameters.  -
 
 
 ## Citation
-If you find the paper or the source code useful, please consider citing the following bibtex: 
+If you find the paper or the source code useful, please cite 
 <pre>
 @misc{shoj2023ppocoder,
   doi = {10.48550/ARXIV.2301.13816},
