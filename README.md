@@ -1,6 +1,6 @@
 # PPOCoder
 
-Official Implementation of "Execution-based Neural Code Generation using Proximal Policy Optimization"
+Official Implementation of [Execution-based Neural Code Generation using Proximal Policy Optimization](https://arxiv.org/abs/2301.13816)
 
 ## Overview
 The utilization of programming language (PL) models, pretrained on large-scale code corpora, as a means of automating software engineering processes has demonstrated considerable potential in streamlining various code generation tasks such as code completion, code translation, and program synthesis. However, current approaches mainly rely on supervised fine-tuning objectives borrowed from text generation, neglecting specific sequence-level features of code, including but not limited to compilability as well as syntactic and functional correctness. To address this limitation, we propose **PPOCoder**, a new framework for code generation that combines pretrained PL models with Proximal Policy Optimization (PPO) deep reinforcement learning and employs execution feedback as the external source of knowledge into the model optimization. PPOCoder is transferable across different code generation tasks and PLs.
@@ -84,15 +84,17 @@ You can apply this code on different tasks by modifying differnet parameters.  -
 
 
 ## Citation
-<!-- If you find the paper or the source code useful to your projects, please cite the following bibtex: 
+If you find the paper or the source code useful for your projects, please consider citing the following bibtex: 
 <pre>
-@inproceedings{
-	le2022coderl,
-	title={Code{RL}: Mastering Code Generation through Pretrained Models and Deep Reinforcement Learning},
-	author={Hung Le and Yue Wang and Akhilesh Deepak Gotmare and Silvio Savarese and Steven Hoi},
-	booktitle={Advances in Neural Information Processing Systems},
-	editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
-	year={2022},
-	url={https://openreview.net/forum?id=WaGvb7OzySA}
+@misc{https://doi.org/10.48550/arxiv.2301.13816,
+  doi = {10.48550/ARXIV.2301.13816},
+  url = {https://arxiv.org/abs/2301.13816},
+  author = {Shojaee, Parshin and Jain, Aneesh and Tipirneni, Sindhu and Reddy, Chandan K.},
+  keywords = {Machine Learning (cs.LG), Artificial Intelligence (cs.AI), Computation and Language (cs.CL), Programming Languages (cs.PL), FOS: Computer and information sciences, FOS: Computer and information sciences},
+  title = {Execution-based Code Generation using Deep Reinforcement Learning},
+  publisher = {arXiv},
+  year = {2023},
+  copyright = {Creative Commons Attribution 4.0 International}
 }
-</pre> -->
+}
+</pre>
