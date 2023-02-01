@@ -86,15 +86,13 @@ You can apply this code on different tasks by modifying differnet parameters.  -
 ## Citation
 If you find the paper or the source code useful for your projects, please consider citing the following bibtex: 
 <pre>
-@misc{https://doi.org/10.48550/arxiv.2301.13816,
+@misc{shoj2023ppocoder,
   doi = {10.48550/ARXIV.2301.13816},
   url = {https://arxiv.org/abs/2301.13816},
   author = {Shojaee, Parshin and Jain, Aneesh and Tipirneni, Sindhu and Reddy, Chandan K.},
-  keywords = {Machine Learning (cs.LG), Artificial Intelligence (cs.AI), Computation and Language (cs.CL), Programming Languages (cs.PL), FOS: Computer and information sciences, FOS: Computer and information sciences},
   title = {Execution-based Code Generation using Deep Reinforcement Learning},
   publisher = {arXiv},
   year = {2023},
-  copyright = {Creative Commons Attribution 4.0 International}
-}
-}
+  }
+
 </pre>
