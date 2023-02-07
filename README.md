@@ -24,7 +24,7 @@ pip install -r requirements.txt
 ## Datasets
 We finetune/evaluate models on the following major dataset benchmarks for different code generation tasks:
 
-* **CodeSearchNet(CSN)** is available [here](https://github.com/github/CodeSearchNet##data-details)
+* **CodeSearchNet (CSN)** is available [here](https://github.com/github/CodeSearchNet##data-details)
 * **XLCoST** is available [here](https://github.com/reddy-lab-code-research/XLCoST)
 * **APPS** is available [here](https://github.com/hendrycks/apps)
 * **MBPP** is available [here](https://github.com/google-research/google-research/tree/master/mbpp)
