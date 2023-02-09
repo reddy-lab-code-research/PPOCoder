@@ -90,7 +90,7 @@ You can apply this code on different tasks by modifying differnet parameters.  -
 ## Citation
 If you find the paper or the repo useful, please cite it with
 <pre>
-@misc{shoj2023ppocoder,
+@article{shoj2023ppocoder,
   doi = {10.48550/ARXIV.2301.13816},
   url = {https://arxiv.org/abs/2301.13816},
   author = {Shojaee, Parshin and Jain, Aneesh and Tipirneni, Sindhu and Reddy, Chandan K.},
