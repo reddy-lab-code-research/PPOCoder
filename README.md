@@ -5,6 +5,8 @@ Official Implementation of [Execution-based Neural Code Generation using Proxima
 ## Overview
 The utilization of programming language (PL) models, pretrained on large-scale code corpora, as a means of automating software engineering processes has demonstrated considerable potential in streamlining various code generation tasks such as code completion, code translation, and program synthesis. However, current approaches mainly rely on supervised fine-tuning objectives borrowed from text generation, neglecting specific sequence-level features of code, including but not limited to compilability as well as syntactic and functional correctness. To address this limitation, we propose **PPOCoder**, a new framework for code generation that combines pretrained PL models with Proximal Policy Optimization (PPO) deep reinforcement learning and employs execution feedback as the external source of knowledge into the model optimization. PPOCoder is transferable across different code generation tasks and PLs.
 
+<div style="margin-top: -50px;"></div>
+
 <p align="center">
 <img src="images/PPOCoder_v4.gif" width="100%" />
  <br>
