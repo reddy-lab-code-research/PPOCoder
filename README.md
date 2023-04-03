@@ -48,7 +48,7 @@ We have created `run.sh` script to execute PPO-based PL model fine-tuning based 
 | `ns`    | Number of Synthetic Samples                                 | 10      |
 | `data_path`    | Path to the original data samples                                 | data/xlcost/java-cpp/      |
 | `output_path`    | Path to save generations and outputs                                 | saved_results/java-cpp/      |
-| `baseline_output_dir`    | Path to the vase finetuned CodeT5 (bfore RL) outputs                                 | baselines/saved_models/java-cpp/     |
+| `baseline_output_dir`    | Path to the base finetuned CodeT5 (before RL) outputs                                 | baselines/saved_models/java-cpp/     |
 | `load_model_path`    | Path to the base finetuned CodeT5 model (before RL) for each downstream task                                 | baselines/saved_models/java-cpp/pytorch_model.bin     |
 | `max_source_length`    | Maxmim Sournce Length                                 | 400     |
 | `max_target_length`    | Maxmim Target Length                                 | 400     |
