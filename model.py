@@ -27,7 +27,7 @@ class CodeT5HeadWithValueModel(nn.Module):
         return outputs
 
     
-def respond_to_batch(model, source_ids, attention_mask, max_target_length=400, top_k=100, top_p=1.0):
+def respond_to_batch(model, source_ids, attention_mask, max_target_length=400, top_k=5, top_p=1.0):
     
     preds = model.model.generate(source_ids, attention_mask=attention_mask, do_sample=True, top_k=top_k, top_p=top_p,
                                  max_length=max_target_length)
