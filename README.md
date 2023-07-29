@@ -56,7 +56,7 @@ We have created `run.sh` script to execute PPO-based PL model fine-tuning based 
 | `test_batch_size`    | Testing Batch Size                                 | 48     |
 | `lr`    | Learning Rate                                 | 1e-6     |
 | `kl_coef`    | Initial coefficient of the KL divergence penalty in the reward                                 | 0.1     |
-| `kl_target`    | Tararget of the KL which adaptively controls the KL coefficient                                 | 1     |
+| `kl_target`    | Target of the KL which adaptively controls the KL coefficient                                 | 1     |
 | `vf_coef`    | Coefficient of the vf error in the ppo loss                                 | 1e-3     |
 | `run`    | Index of the run                                 | 1      |
 
