@@ -155,7 +155,7 @@ class PPOTrainer:
         non_score_reward = -self.kl_ctl.value * kl
         rewards = non_score_reward.clone().detach() 
         print ('kl reward', rewards.mean(axis=-1))
-        rewards += self.ppo_params['reward_coef']*scores
+        rewards += scores
         print ('score reward', scores.sum(axis=-1))
         return rewards, non_score_reward, self.kl_ctl.value
 
