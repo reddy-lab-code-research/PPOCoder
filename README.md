@@ -91,11 +91,15 @@ You can apply this code on different tasks by modifying differnet parameters.  -
 ## Citation
 If you find the paper or the repo useful, please cite it with
 <pre>
-@article{shojaee2023ppocoder,
-  title={Execution-based Code Generation using Deep Reinforcement Learning},
-  author={Shojaee, Parshin and Jain, Aneesh and Tipirneni, Sindhu and Reddy, Chandan K},
-  journal={arXiv preprint arXiv:2301.13816},
-  year={2023}
+@article{
+shojaee2023executionbased,
+title={Execution-based Code Generation using Deep Reinforcement Learning},
+author={Parshin Shojaee and Aneesh Jain and Sindhu Tipirneni and Chandan K. Reddy},
+journal={Transactions on Machine Learning Research},
+issn={2835-8856},
+year={2023},
+url={https://openreview.net/forum?id=0XBuaxqEcG},
+note={}
 }
 
 </pre>
