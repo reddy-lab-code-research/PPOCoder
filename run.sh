@@ -5,10 +5,10 @@ python rl_run.py \
 --l2 cpp \
 --asp 5 \
 --ns 10 \
--- data_path PPOCodder/data/ \
---outpu_path PPOCodder/saved_models/ \
+--data_path PPOCodder/data/ \
+--output_path PPOCodder/saved_models/ \
 --load_model_path PPOCodder/baselines/saved_models/java-cpp/pytorch_model.bin \
---baseline_out_dir /PPOCodder/baselines/saved_models/java-cpp/ \
+--baseline_output_path /PPOCodder/baselines/saved_models/java-cpp/ \
 --max_source_length 400 \
 --max_target_length 400 \
 --train_batch_size 32 \
