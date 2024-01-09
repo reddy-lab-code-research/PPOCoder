@@ -97,6 +97,4 @@ If you find the paper or the repo useful, please cite it with
   journal={arXiv preprint arXiv:2301.13816},
   year={2023}
 }
-}
-
 </pre>
